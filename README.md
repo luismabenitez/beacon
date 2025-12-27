@@ -37,7 +37,7 @@ php artisan vendor:publish --tag=beacon-config
 ```env
 BEACON_ENABLED=true
 BEACON_PROJECT_KEY=tu-project-key-aqui
-BEACON_ENDPOINT=https://errors.rocketfy.internal/api/error-monitor/report
+BEACON_ENDPOINT=https://beacon.totalterrier.com/api/error-monitor/report
 BEACON_ENV=production
 BEACON_RELEASE=v1.0.0
 ```
@@ -237,4 +237,4 @@ $fingerprint = hash('sha256', implode('|', [
 
 ## Licencia
 
-Propietario - Rocketfy © 2024
+Propietario - Rocketfy © 2026

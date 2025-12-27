@@ -31,7 +31,7 @@ return [
     | The URL of the Beacon central server that receives error reports.
     |
     */
-    'endpoint' => env('BEACON_ENDPOINT', 'https://errors.rocketfy.internal/api/error-monitor/report'),
+    'endpoint' => env('BEACON_ENDPOINT', 'https://beacon.totalterrier.com/api/error-monitor/report'),
 
     /*
     |--------------------------------------------------------------------------
