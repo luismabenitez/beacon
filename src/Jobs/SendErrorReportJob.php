@@ -14,17 +14,39 @@ class SendErrorReportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 3;
-    public int $backoff = 10;
+    /** @var int */
+    public $tries = 3;
 
-    public function __construct(
-        protected array $payload,
-        protected string $endpoint,
-        protected string $projectKey,
-        protected int $timeout = 5
-    ) {}
+    /** @var int */
+    public $backoff = 10;
 
-    public function handle(): void
+    /** @var array */
+    protected $payload;
+
+    /** @var string */
+    protected $endpoint;
+
+    /** @var string */
+    protected $projectKey;
+
+    /** @var int */
+    protected $timeout;
+
+    /**
+     * @param array $payload
+     * @param string $endpoint
+     * @param string $projectKey
+     * @param int $timeout
+     */
+    public function __construct(array $payload, string $endpoint, string $projectKey, int $timeout = 5)
+    {
+        $this->payload = $payload;
+        $this->endpoint = $endpoint;
+        $this->projectKey = $projectKey;
+        $this->timeout = $timeout;
+    }
+
+    public function handle()
     {
         $response = Http::timeout($this->timeout)
             ->withHeaders([
@@ -41,7 +63,10 @@ class SendErrorReportJob implements ShouldQueue
         }
     }
 
-    public function tags(): array
+    /**
+     * @return array
+     */
+    public function tags()
     {
         return ['beacon', 'error-report'];
     }

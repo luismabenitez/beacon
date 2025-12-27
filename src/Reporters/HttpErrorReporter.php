@@ -10,9 +10,14 @@ use Throwable;
 
 class HttpErrorReporter implements ErrorReporterInterface
 {
-    protected array $config;
-    protected ErrorContextBuilder $contextBuilder;
-    protected array $ignoredExceptions;
+    /** @var array */
+    protected $config;
+
+    /** @var ErrorContextBuilder */
+    protected $contextBuilder;
+
+    /** @var array */
+    protected $ignoredExceptions;
 
     public function __construct(array $config)
     {

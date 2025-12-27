@@ -10,7 +10,8 @@ use Throwable;
 
 class ErrorContextBuilder
 {
-    protected array $config;
+    /** @var array */
+    protected $config;
 
     public function __construct(array $config)
     {
@@ -128,7 +129,7 @@ class ErrorContextBuilder
         }
 
         $headers = collect($request->headers->all())
-            ->map(fn ($values) => implode(', ', $values))
+            ->map(function ($values) { return implode(', ', $values); })
             ->toArray();
 
         return $this->redactSensitiveData($headers);
@@ -180,7 +181,7 @@ class ErrorContextBuilder
                     'name' => $user->name ?? null,
                 ];
             }
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             // Auth might not be available, ignore
         }
 
