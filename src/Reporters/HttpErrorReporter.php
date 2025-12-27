@@ -86,19 +86,25 @@ class HttpErrorReporter implements ErrorReporterInterface
         $retryTimes = $this->config['http']['retry_times'] ?? 2;
         $retrySleep = $this->config['http']['retry_sleep'] ?? 100;
 
-        $response = Http::timeout($timeout)
-            ->retry($retryTimes, $retrySleep, throw: false)
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-                'X-Beacon-Key' => $this->config['project_key'],
-            ])
-            ->post($endpoint, $payload);
+        try {
+            $response = Http::timeout($timeout)
+                ->retry($retryTimes, $retrySleep)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'X-Beacon-Key' => $this->config['project_key'],
+                ])
+                ->post($endpoint, $payload);
 
-        if ($response->failed()) {
-            Log::warning('Beacon: Server returned error', [
-                'status' => $response->status(),
-                'body' => $response->body(),
+            if ($response->failed()) {
+                Log::warning('Beacon: Server returned error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Log::warning('Beacon: HTTP request failed', [
+                'error' => $e->getMessage(),
             ]);
         }
     }
