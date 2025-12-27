@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
 class SendErrorReportJob implements ShouldQueue
@@ -48,17 +48,30 @@ class SendErrorReportJob implements ShouldQueue
 
     public function handle()
     {
-        $response = Http::timeout($this->timeout)
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-                'X-Beacon-Key' => $this->projectKey,
-            ])
-            ->post($this->endpoint, $this->payload);
+        try {
+            $client = new Client([
+                'timeout' => $this->timeout,
+                'http_errors' => false,
+            ]);
 
-        if ($response->failed()) {
-            Log::warning('Beacon: Queued report failed', [
-                'status' => $response->status(),
+            $response = $client->post($this->endpoint, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'X-Beacon-Key' => $this->projectKey,
+                ],
+                'json' => $this->payload,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
+                Log::warning('Beacon: Queued report failed', [
+                    'status' => $statusCode,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Beacon: Queued HTTP request failed', [
+                'error' => $e->getMessage(),
             ]);
         }
     }

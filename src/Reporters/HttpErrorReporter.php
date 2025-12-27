@@ -2,7 +2,7 @@
 
 namespace Luismabenitez\Beacon\Reporters;
 
-use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Luismabenitez\Beacon\Contracts\ErrorReporterInterface;
 use Luismabenitez\Beacon\Support\ErrorContextBuilder;
@@ -88,23 +88,27 @@ class HttpErrorReporter implements ErrorReporterInterface
     {
         $endpoint = $this->config['endpoint'];
         $timeout = $this->config['http']['timeout'] ?? 5;
-        $retryTimes = $this->config['http']['retry_times'] ?? 2;
-        $retrySleep = $this->config['http']['retry_sleep'] ?? 100;
 
         try {
-            $response = Http::timeout($timeout)
-                ->retry($retryTimes, $retrySleep)
-                ->withHeaders([
+            $client = new Client([
+                'timeout' => $timeout,
+                'http_errors' => false,
+            ]);
+
+            $response = $client->post($endpoint, [
+                'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                     'X-Beacon-Key' => $this->config['project_key'],
-                ])
-                ->post($endpoint, $payload);
+                ],
+                'json' => $payload,
+            ]);
 
-            if ($response->failed()) {
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
                 Log::warning('Beacon: Server returned error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
+                    'status' => $statusCode,
+                    'body' => (string) $response->getBody(),
                 ]);
             }
         } catch (Throwable $e) {
