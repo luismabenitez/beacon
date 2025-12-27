@@ -120,4 +120,14 @@ class HttpErrorReporter implements ErrorReporterInterface
     {
         return $this->contextBuilder;
     }
+
+    /**
+     * Register Beacon with Laravel's exception handler (Laravel 11+).
+     */
+    public function handles(\Illuminate\Foundation\Configuration\Exceptions $exceptions): void
+    {
+        $exceptions->reportable(function (Throwable $exception) {
+            $this->report($exception);
+        });
+    }
 }
